@@ -12,7 +12,7 @@ $user = getCurrentUser();
 $company = fetchRow($conn, "SELECT * FROM companies WHERE user_id = ?", [$_SESSION['user_id']]);
 
 if (!$company) {
-    header('Location: /index.php');
+    header('Location: ../index.php');
     exit();
 }
 
@@ -63,6 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
             logActivity($_SESSION['user_id'], $_SESSION['role'], 'booking_' . $action, ['booking_id' => $bookingId]);
             
             $success = 'Booking status updated successfully!';
+            // Refresh page to show updated data
+            header('Location: dashboard.php');
+            exit();
         } catch (Exception $e) {
             $error = 'Failed to update booking status';
         }
@@ -77,243 +80,180 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company Dashboard - OneStop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../includes/dashboard.css" rel="stylesheet">
     <style>
-        .dashboard-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-2px);
-        }
-        .stat-card {
+        .company-info-box {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
         }
-        .stat-card.success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-        .stat-card.warning {
-            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-        }
-        .navbar-brand {
-            font-weight: bold;
+        
+        .recent-bookings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand text-primary" href="dashboard.php">
-                <i class="fas fa-globe me-2"></i>OneStop
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="services.php">My Services</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i><?php echo htmlspecialchars($user['name']); ?>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="profile.php">Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="../auth/logout.php">Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container my-5">
-        <!-- Welcome Section -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2>Welcome, <?php echo htmlspecialchars($company['name']); ?>!</h2>
-                <p class="text-muted">Manage your services and bookings</p>
-            </div>
-        </div>
-
-        <!-- Alerts -->
-        <?php if (isset($error)): ?>
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (isset($success)): ?>
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?>
-            </div>
-        <?php endif; ?>
-
-        <!-- Statistics Cards -->
-        <div class="row mb-5">
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card dashboard-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-list fa-2x mb-3"></i>
-                        <h3><?php echo $stats['total_services']; ?></h3>
-                        <p class="mb-0">Total Services</p>
+    <div class="dashboard-container">
+        <?php include '../includes/sidebar.php'; ?>
+        
+        <div class="dashboard-main">
+            <div class="dashboard-content">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2>Welcome, <?php echo htmlspecialchars($company['name']); ?>!</h2>
+                            <p class="text-muted">Manage your services and bookings</p>
+                        </div>
+                        <button class="btn btn-primary d-lg-none" onclick="toggleSidebar()">
+                            <i class="fas fa-bars"></i> Menu
+                        </button>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card success dashboard-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-check-circle fa-2x mb-3"></i>
-                        <h3><?php echo $stats['approved_services']; ?></h3>
-                        <p class="mb-0">Approved Services</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card dashboard-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-calendar-check fa-2x mb-3"></i>
-                        <h3><?php echo $stats['total_bookings']; ?></h3>
-                        <p class="mb-0">Total Bookings</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card warning dashboard-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-clock fa-2x mb-3"></i>
-                        <h3><?php echo $stats['pending_bookings']; ?></h3>
-                        <p class="mb-0">Pending Bookings</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Quick Actions -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <div class="card dashboard-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Quick Actions</h5>
-                        <div class="row">
-                            <div class="col-md-4 mb-2">
-                                <a href="services/add.php" class="btn btn-primary w-100">
-                                    <i class="fas fa-plus me-2"></i>Add New Service
-                                </a>
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <a href="services.php" class="btn btn-outline-primary w-100">
-                                    <i class="fas fa-list me-2"></i>Manage Services
-                                </a>
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <a href="#bookings" class="btn btn-outline-secondary w-100">
-                                    <i class="fas fa-calendar me-2"></i>View Bookings
-                                </a>
-                            </div>
+                <!-- Alerts -->
+                <?php if (isset($error)): ?>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (isset($success)): ?>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <i class="fas fa-list stat-icon"></i>
+                            <div class="stat-value"><?php echo $stats['total_services']; ?></div>
+                            <div class="stat-label">Total Services</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card" style="border-left-color: #28a745;">
+                            <i class="fas fa-check-circle stat-icon" style="color: #28a745;"></i>
+                            <div class="stat-value"><?php echo $stats['approved_services']; ?></div>
+                            <div class="stat-label">Approved Services</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card" style="border-left-color: #17a2b8;">
+                            <i class="fas fa-calendar-check stat-icon" style="color: #17a2b8;"></i>
+                            <div class="stat-value"><?php echo $stats['total_bookings']; ?></div>
+                            <div class="stat-label">Total Bookings</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card" style="border-left-color: #ffc107;">
+                            <i class="fas fa-clock stat-icon" style="color: #ffc107;"></i>
+                            <div class="stat-value"><?php echo $stats['pending_bookings']; ?></div>
+                            <div class="stat-label">Pending Bookings</div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Recent Bookings -->
-        <div class="row" id="bookings">
-            <div class="col-12">
-                <div class="card dashboard-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Recent Bookings</h5>
+                <!-- Recent Bookings -->
+                <div class="content-card">
+                    <div class="recent-bookings-header">
+                        <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Recent Bookings</h5>
+                        <a href="services.php" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-list me-1"></i>Manage Services
+                        </a>
                     </div>
-                    <div class="card-body">
-                        <?php if (empty($bookings)): ?>
-                            <div class="text-center py-5">
-                                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                                <h5 class="text-muted">No bookings yet</h5>
-                                <p class="text-muted">Bookings will appear here when customers make reservations</p>
-                            </div>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
+                    
+                    <?php if (empty($bookings)): ?>
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No bookings yet</h5>
+                            <p class="text-muted">Bookings will appear here when customers make reservations</p>
+                            <a href="services/add.php" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Your First Service
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Customer</th>
+                                        <th>Dates</th>
+                                        <th>Guests</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($bookings as $booking): ?>
                                         <tr>
-                                            <th>Service</th>
-                                            <th>Customer</th>
-                                            <th>Dates</th>
-                                            <th>Guests</th>
-                                            <th>Total</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <td><strong><?php echo htmlspecialchars($booking['service_title']); ?></strong></td>
+                                            <td>
+                                                <div>
+                                                    <strong><?php echo htmlspecialchars($booking['customer_name']); ?></strong>
+                                                    <br>
+                                                    <small class="text-muted"><?php echo htmlspecialchars($booking['customer_email']); ?></small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <?php echo date('M j', strtotime($booking['start_date'])); ?> - 
+                                                <?php echo date('M j, Y', strtotime($booking['end_date'])); ?>
+                                            </td>
+                                            <td><?php echo $booking['pax']; ?></td>
+                                            <td>$<?php echo number_format($booking['total_price'], 2); ?></td>
+                                            <td>
+                                                <?php
+                                                $statusClass = '';
+                                                switch($booking['status']) {
+                                                    case 'approved': $statusClass = 'success'; break;
+                                                    case 'pending': $statusClass = 'warning'; break;
+                                                    case 'declined': $statusClass = 'danger'; break;
+                                                    case 'cancelled': $statusClass = 'secondary'; break;
+                                                }
+                                                ?>
+                                                <span class="badge bg-<?php echo $statusClass; ?>">
+                                                    <?php echo ucfirst($booking['status']); ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <?php if ($booking['status'] === 'pending'): ?>
+                                                    <form method="POST" class="d-inline">
+                                                        <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
+                                                        <button type="submit" name="action" value="approved" class="btn btn-sm btn-success me-1">
+                                                            <i class="fas fa-check me-1"></i>Approve
+                                                        </button>
+                                                        <button type="submit" name="action" value="declined" class="btn btn-sm btn-danger">
+                                                            <i class="fas fa-times me-1"></i>Decline
+                                                        </button>
+                                                    </form>
+                                                <?php else: ?>
+                                                    <span class="text-muted">No actions</span>
+                                                <?php endif; ?>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($bookings as $booking): ?>
-                                            <tr>
-                                                <td>
-                                                    <strong><?php echo htmlspecialchars($booking['service_title']); ?></strong>
-                                                </td>
-                                                <td>
-                                                    <div>
-                                                        <strong><?php echo htmlspecialchars($booking['customer_name']); ?></strong>
-                                                        <br>
-                                                        <small class="text-muted"><?php echo htmlspecialchars($booking['customer_email']); ?></small>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <?php echo date('M j', strtotime($booking['start_date'])); ?> - 
-                                                    <?php echo date('M j, Y', strtotime($booking['end_date'])); ?>
-                                                </td>
-                                                <td><?php echo $booking['pax']; ?></td>
-                                                <td>$<?php echo number_format($booking['total_price'], 2); ?></td>
-                                                <td>
-                                                    <?php
-                                                    $statusClass = '';
-                                                    switch($booking['status']) {
-                                                        case 'approved': $statusClass = 'success'; break;
-                                                        case 'pending': $statusClass = 'warning'; break;
-                                                        case 'declined': $statusClass = 'danger'; break;
-                                                        case 'cancelled': $statusClass = 'secondary'; break;
-                                                    }
-                                                    ?>
-                                                    <span class="badge bg-<?php echo $statusClass; ?>">
-                                                        <?php echo ucfirst($booking['status']); ?>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <?php if ($booking['status'] === 'pending'): ?>
-                                                        <form method="POST" class="d-inline">
-                                                            <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
-                                                            <button type="submit" name="action" value="approved" class="btn btn-sm btn-success me-1">
-                                                                Approve
-                                                            </button>
-                                                            <button type="submit" name="action" value="declined" class="btn btn-sm btn-danger">
-                                                                Decline
-                                                            </button>
-                                                        </form>
-                                                    <?php else: ?>
-                                                        <span class="text-muted">No actions</span>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+   
 </body>
 </html>

@@ -148,10 +148,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn()) {
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="../auth/login.php">Login</a>
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-outline-primary ms-2" href="../auth/register.php">Sign Up</a>
+                            <a class="btn btn-outline-primary ms-2" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -277,6 +277,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn()) {
             </div>
         </div>
     </div>
+
+    <!-- Include Modals -->
+    <?php include '../includes/modals.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
     <script>

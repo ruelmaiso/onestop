@@ -31,6 +31,7 @@ $services = fetchAll($conn,
     <title>My Services - OneStop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../includes/dashboard.css" rel="stylesheet">
     <style>
         .service-card {
             border: none;
@@ -47,37 +48,19 @@ $services = fetchAll($conn,
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand text-primary" href="dashboard.php">
-                <i class="fas fa-globe me-2"></i>OneStop
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    
-               
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i><?php echo htmlspecialchars($user['name']); ?>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="profile.php">Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="../auth/logout.php">Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+  
+   
+    <div class="dashboard-container">
+        <?php include '../includes/sidebar.php'; ?>
+        
+        <div class="dashboard-main">
+            <div class="dashboard-content">
+                <div class="dashboard-header">
+                    <h2><i class="fas fa-user me-2"></i>My Services</h2>
+                    <p class="text-muted">Manage your Services Settings</p>
+                </div>
 
-    <div class="container my-5">
+                <div class="container my-5">
         <div class="row mb-4">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
@@ -140,6 +123,10 @@ $services = fetchAll($conn,
             <?php endif; ?>
         </div>
     </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>

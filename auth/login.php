@@ -81,10 +81,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 40px;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #FF7000;
             border: none;
-            border-radius: 25px;
             padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #e85f00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 112, 0, 0.3);
+        }
+        .form-control, .form-select, #captcha {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus, #captcha:focus {
+            border-color: #FF7000;
+            box-shadow: 0 0 0 3px rgba(255, 112, 0, 0.1);
+            outline: none;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
         }
     </style>
 </head>

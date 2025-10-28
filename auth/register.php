@@ -40,7 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result['success']) {
             $success = 'Registration successful! Please wait for admin approval.';
             // Log activity
-            logActivity($result['user_id'], $role, 'user_registered', ['email' => $email]);
+            if (isset($result['user_id'])) {
+                logActivity($result['user_id'], $role, 'user_registered', ['email' => $email]);
+            }
         } else {
             $error = $result['message'];
         }
